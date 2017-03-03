@@ -1,3 +1,9 @@
+<!-- Pi-hole: A black hole for Internet advertisements
+*    (c) 2017 Pi-hole, LLC (https://pi-hole.net)
+*    Network-wide ad blocking via your own hardware.
+*
+*    This file is copyright under the latest version of the EUPL.
+*    Please see LICENSE file for your rights under this license. -->
 <?php
     require "scripts/pi-hole/php/header.php";
 
@@ -37,8 +43,8 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-    <h2>Main page</h2>
-    <p>On the main page, you can see various Pi-hole statistics:</p>
+    <h2>Dashboard</h2>
+    <p>On the dashboard, you can see various Pi-hole statistics:</p>
     <ul>
         <li>Summary: A summary of statistics showing how many total DNS queries have been blocked today, what percentage of DNS queries have been blocked, and how many domains are in the compiled ad list. This summary is updated every 10 seconds.</li>
         <li>Queries over time: Graph showing DNS queries (total and blocked) over 10 minute time intervals. More information can be acquired by hovering over the lines. This graph is updated every 10 minutes.</li>
@@ -51,13 +57,13 @@
                 <li>and others</li>
             </ul>
         </li>
-        <li>Query Types: Shows to which upstream DNS the permitted requests have been forwarded to.</li>
+        <li>Forward Destinations: Shows to which upstream DNS the permitted requests have been forwarded to.</li>
         <li>Top Domains: Ranking of requested sites by number of DNS lookups.</li>
         <li>Top Advertisers: Ranking of requested advertisements by number of DNS lookups.</li>
         <li>Top Clients: Ranking of how many DNS requests each client has made on the local network.</li>
     </ul>
     <?php if($authenticationsystem){ ?>
-    <p>Note that the login session does <em>not</em> expire on the main page, as the summary is updated every 10 seconds which refreshes the session.</p>
+    <p>Note that the login session does <em>not</em> expire on the dashboard, as the summary is updated every 10 seconds which refreshes the session.</p>
     <?php } ?>
     </div>
 </div>
@@ -70,19 +76,9 @@
 <div class="row">
     <div class="col-md-12">
     <h2>White- / Blacklist</h2>
-    <p>Add or remove domains (or subdomains) from the white-/blacklist. If a domain is added to e.g. the whitelist, any possible entry of the same domain will be automatically removed from the blacklist and vice versa. Adding wildcards using the web UI is currently <em>not</em> supported.</p>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-    <h2>Update Lists</h2>
-    <p>Will download any updates from the third-party ad-serving domain lists that we source. By default, this command runs once a week via cron.</p>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-    <h2>Query adlists</h2>
-    This function is useful to find out what list a domain appears on. Since we don't control what the third-parties put on the block lists, you may find that a domain you normally visit stops working. If this is the case, you could run  this command to scan for strings in the list of blocked domains and it will return the list the domain is found on. This proved useful a while back when the Mahakala list was adding apple.com and microsoft.com to their block list.</p>
+    <p>Add or remove domains (or subdomains) from the white-/blacklist. If a domain is added to e.g. the whitelist, any possible entry of the same domain will be automatically removed from the blacklist and vice versa.</p>
+    <p>Wildcard blacklisting is supported (entering <tt>something.de</tt> will block this domain including all subdomains like <tt>a.bb.c.999.something.de</tt>). Note that wildcard whitelisting is <em>not</em> supported.</p>
+    <p>You can white-/blacklist multiple entries at a time if you separate the domains by spaces.</p>
     </div>
 </div>
 <div class="row">
@@ -93,16 +89,34 @@
 </div>
 <div class="row">
     <div class="col-md-12">
+    <h2>Tools &rarr; Update Lists</h2>
+    <p>Will download any updates from the third-party ad-serving domain lists that we source. By default, this command runs once a week via cron (Sunday at 01:59).</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+    <h2>Tools &rarr; Query adlists</h2>
+    This function is useful to find out what list a domain appears on. Since we don't control what the third-parties put on the block lists, you may find that a domain you normally visit stops working. If this is the case, you could run  this command to scan for strings in the list of blocked domains and it will return the list the domain is found on. This proved useful a while back when the Mahakala list was adding <tt>apple.com</tt> and <tt>microsoft.com</tt> to their block list.</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+    <h2>Tools &rarr; Tail pihole.log</h2>
+    Live tailing of the raw Pi-hole log.</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
     <h2>Settings</h2>
     Change settings for the Pi-Hole
     <h4>Networking</h4>
-    Displays information about the interfaces of the Pi-Hole. No changes possible
+    Displays information about the interfaces of the Pi-Hole. No changes possible.
     <h4>Pi-Hole DHCP Server</h4>
-    Using this setting you can enable/disable the DHCP server of the Pi-Hole. Note that you should disable any other DHCP server on your network to avoid IP addresses being used more than once. You have to give the range of IPs that DHCP will serve and the IP of the local router (gateway). If the DHCP server is active, the current leases are shown on the settings page.
+    Using this setting you can enable/disable the DHCP server of the Pi-Hole. Note that you should disable any other DHCP server on your network to avoid IP addresses being used more than once. You have to give the range of IPs that DHCP will serve and the IP of the local router (gateway). If the DHCP server is active, the current leases are shown on the settings page. IPv4 DHCP will always be activated, IPv6 (stateless + statefull) can be enabled.
     <h4>Upstream DNS Servers</h4>
-    Customize used upstream DNS servers + advanced settings
+    Customize used upstream DNS servers + advanced settings for DNS servers. Note that any number of DNS servers may be enabled at a time.
     <h4>Query Logging</h4>
-    Enabled/disable query logging on your Pi-hole
+    Enabled/disable query logging on your Pi-hole + provide option to flush the log
     <h4>API</h4>
     Change settings which apply to the API as well as the web UI<br>
     Note that Top Clients have to be given as IP addresses
@@ -115,7 +129,7 @@
 <div class="row">
     <div class="col-md-12">
     <h2>Authentication system (currently <?php if($authenticationsystem) { ?>enabled<?php } else { ?>disabled<?php } ?>)</h2>
-    <p>Using the command<pre>sudo pihole -a -p pa22w0rd</pre> where <em>pa22w0rd</em> is the password to be set in this example, one can enable the authentication system of this web interface. Thereafter, a login is required for most pages (the main page will show a limited amount of statistics). Note that the authentication system may be disabled again, by setting an empty password using the command shown above. The Help center will show more details concerning the authentication system only if it is enabled</p>
+    <p>Using the command<pre>sudo pihole -a -p pa22w0rd</pre> where <em>pa22w0rd</em> is the password to be set in this example, one can enable the authentication system of this web interface. Thereafter, a login is required for most pages (the dashboard will show a limited amount of statistics). Note that the authentication system may be disabled again, by setting an empty password using the command shown above. The Help center will show more details concerning the authentication system only if it is enabled</p>
     </div>
 </div>
 <?php if($authenticationsystem) { ?>

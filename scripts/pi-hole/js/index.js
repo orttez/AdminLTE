@@ -1,3 +1,9 @@
+/* Pi-hole: A black hole for Internet advertisements
+*  (c) 2017 Pi-hole, LLC (https://pi-hole.net)
+*  Network-wide ad blocking via your own hardware.
+*
+*  This file is copyright under the latest version of the EUPL.
+*  Please see LICENSE file for your rights under this license. */
 // Define global variables
 var timeLineChart, queryTypeChart, forwardDestinationChart;
 
@@ -132,7 +138,7 @@ function escapeHtml(text) {
 function updateTopClientsChart() {
     $.getJSON("api.php?summaryRaw&getQuerySources", function(data) {
         var clienttable =  $("#client-frequency").find("tbody:last");
-        var domain, percentage, domainname;
+        var domain, percentage, domainname, domainip;
         for (domain in data.top_sources) {
 
             if ({}.hasOwnProperty.call(data.top_sources, domain)){
@@ -140,14 +146,17 @@ function updateTopClientsChart() {
                 domain = escapeHtml(domain);
                 if(domain.indexOf("|") > -1)
                 {
-                    domainname = domain.substr(0, domain.indexOf("|"));
+                    var idx = domain.indexOf("|");
+                    domainname = domain.substr(0, idx);
+                    domainip = domain.substr(idx+1, domain.length-idx);
                 }
                 else
                 {
                     domainname = domain;
+                    domainip = domain;
                 }
 
-                var url = "<a href=\"queries.php?client="+domain+"\">"+domainname+"</a>";
+                var url = "<a href=\"queries.php?client="+domain+"\" title=\""+domainip+"\">"+domainname+"</a>";
                 percentage = data.top_sources[domain] / data.dns_queries_today * 100;
                 clienttable.append("<tr> <td>" + url +
                     "</td> <td>" + data.top_sources[domain] + "</td> <td> <div class=\"progress progress-sm\" title=\""+percentage.toFixed(1)+"%\"> <div class=\"progress-bar progress-bar-blue\" style=\"width: " +
@@ -172,7 +181,8 @@ function updateForwardDestinations() {
             c.push(colors.shift());
             if(key.indexOf("|") > -1)
             {
-                key = key.substr(0, key.indexOf("|"));
+                var idx = key.indexOf("|");
+                key = key.substr(0, idx)+" ("+key.substr(idx+1, key.length-idx)+")";
             }
             forwardDestinationChart.data.labels.push(key);
         });

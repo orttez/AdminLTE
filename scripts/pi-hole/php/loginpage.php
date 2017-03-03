@@ -1,3 +1,11 @@
+<?php
+/* Pi-hole: A black hole for Internet advertisements
+*  (c) 2017 Pi-hole, LLC (https://pi-hole.net)
+*  Network-wide ad blocking via your own hardware.
+*
+*  This file is copyright under the latest version of the EUPL.
+*  Please see LICENSE file for your rights under this license. */ ?>
+
 <div class="mainbox col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3">
   <div class="panel panel-default">
     <div class="panel-heading">
@@ -5,6 +13,7 @@
 
       <div class="panel-title text-center"><span class="logo-lg" style="font-size: 25px;"><b>Pi</b>-hole</span></div>
       <p class="login-box-msg">Sign in to start your session</p>
+      <div id="cookieInfo" class="panel-title text-center" style="color:#F00; font-size: 150%" hidden>Verify that cookies are allowed for <tt><?php echo $_SERVER['HTTP_HOST']; ?></tt></div>
       <?php if ($wrongpassword) { ?>
         <div class="form-group has-error login-box-msg">
           <label class="control-label"><i class="fa fa-times-circle-o"></i> Wrong password!</label>
@@ -54,7 +63,6 @@
           </div>
         </div>
       </form>
-
     </div>
   </div>
 </div>

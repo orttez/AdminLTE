@@ -1,3 +1,9 @@
+<!-- Pi-hole: A black hole for Internet advertisements
+*    (c) 2017 Pi-hole, LLC (https://pi-hole.net)
+*    Network-wide ad blocking via your own hardware.
+*
+*    This file is copyright under the latest version of the EUPL.
+*    Please see LICENSE file for your rights under this license. -->
 <?php
     require "scripts/pi-hole/php/header.php";
 
@@ -61,7 +67,7 @@ if(isset($setupVars["API_PRIVACY_MODE"]))
 </div>
 <div id="alFailure" class="alert alert-danger alert-dismissible fade in" role="alert" hidden="true">
     <button type="button" class="close" data-hide="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    Failure! Something went wrong.
+    Failure! Something went wrong.<span id="err"></span>
 </div>
 
 <div class="row">

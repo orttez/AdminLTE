@@ -1,7 +1,20 @@
+/* Pi-hole: A black hole for Internet advertisements
+*  (c) 2017 Pi-hole, LLC (https://pi-hole.net)
+*  Network-wide ad blocking via your own hardware.
+*
+*  This file is copyright under the latest version of the EUPL.
+*  Please see LICENSE file for your rights under this license. */
 function eventsource() {
     var alInfo = $("#alInfo");
     var alSuccess = $("#alSuccess");
     var ta = $("#output");
+
+    // IE does not support EventSource - exit early
+    if (typeof EventSource !== "function") {
+        ta.show();
+        ta.html("Updating lists of ad-serving domains is not supported with this browser!");
+        return;
+    }
     var source = new EventSource("scripts/pi-hole/php/gravity.sh.php");
 
     ta.html("");
@@ -27,7 +40,7 @@ function eventsource() {
     }, false);
 }
 
-$("#gravityBtn").on("click", () => {
+$("#gravityBtn").on("click", function(){
     $("#gravityBtn").attr("disabled", true);
     eventsource();
 });

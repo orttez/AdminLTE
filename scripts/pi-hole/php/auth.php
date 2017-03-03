@@ -1,4 +1,11 @@
 <?php
+/* Pi-hole: A black hole for Internet advertisements
+*  (c) 2017 Pi-hole, LLC (https://pi-hole.net)
+*  Network-wide ad blocking via your own hardware.
+*
+*  This file is copyright under the latest version of the EUPL.
+*  Please see LICENSE file for your rights under this license. */
+
 require('func.php');
 $ERRORLOG = getenv('PHP_ERROR_LOG');
 if (empty($ERRORLOG)) {
@@ -17,11 +24,13 @@ function log_and_die($message) {
 function check_cors() {
     $setupVars = parse_ini_file("/etc/pihole/setupVars.conf");
     $ipv4 = isset($setupVars["IPV4_ADDRESS"]) ? explode("/", $setupVars["IPV4_ADDRESS"])[0] : $_SERVER['SERVER_ADDR'];
+    $ipv6 = isset($setupVars["IPV6_ADDRESS"]) ? explode("/", $setupVars["IPV6_ADDRESS"])[0] : $_SERVER['SERVER_ADDR'];
 
     // Check CORS
     $AUTHORIZED_HOSTNAMES = array(
         $ipv4,
-        $_SERVER["SERVER_NAME"],
+        $ipv6,
+        str_replace(array("[","]"), array("",""), $_SERVER["SERVER_NAME"]),
         "pi.hole",
         "localhost"
     );
@@ -40,10 +49,15 @@ function check_cors() {
     // https://pi.hole
     // pi.hole:8080
     // However, we don't use parse_url(...) if there is no colon, since it will fail for e.g. "pi.hole"
-    if(strpos($server_host, ":"))
+
+    // Don't use parse_url for IPv6 addresses, since it does not support them
+    // see PHP bug report: https://bugs.php.net/bug.php?id=72811
+    if(strpos($server_host, ":") && !strpos($server_host, "[") && !strpos($server_host, "]"))
     {
         $server_host = parse_url($_SERVER['HTTP_HOST'], PHP_URL_HOST);
     }
+    // Remove "[" ... "]"
+    $server_host = str_replace(array("[","]"), array("",""), $server_host);
 
     if(isset($_SERVER['HTTP_HOST']) && !in_array($server_host, $AUTHORIZED_HOSTNAMES)) {
         log_and_die("Failed Host Check: " . $server_host .' vs '. join(', ', $AUTHORIZED_HOSTNAMES));
@@ -53,10 +67,12 @@ function check_cors() {
         $server_origin = $_SERVER['HTTP_ORIGIN'];
 
         // Detect colon in $_SERVER['HTTP_ORIGIN'] (see comment above)
-        if(strpos($server_origin, ":"))
+        if(strpos($server_origin, ":") && !strpos($server_origin, "[") && !strpos($server_origin, "]"))
         {
             $server_origin = parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST);
         }
+        // Remove "[", "]","http://", and "https://"
+        $server_origin = str_replace(array("[","]","http://","https://"), array("","","",""), $server_origin);
 
         if(!in_array($server_origin, $AUTHORIZED_HOSTNAMES)) {
             log_and_die("Failed CORS: " . $server_origin .' vs '. join(', ', $AUTHORIZED_HOSTNAMES));
@@ -103,9 +119,13 @@ function check_csrf($token) {
 
 function check_domain() {
     if(isset($_POST['domain'])){
-        $validDomain = is_valid_domain_name($_POST['domain']);
-        if(!$validDomain){
-            log_and_die($_POST['domain']. ' is not a valid domain');
+        $domains = explode(" ",$_POST['domain']);
+        foreach($domains as $domain)
+        {
+            $validDomain = is_valid_domain_name($domain);
+            if(!$validDomain){
+                log_and_die(htmlspecialchars($domain. ' is not a valid domain'));
+            }
         }
     }
 }
@@ -126,11 +146,11 @@ function list_verify($type) {
         require("password.php");
         if(strlen($pwhash) == 0)
         {
-            log_and_die("No password set - ".$type."listing with password not supported");
+            log_and_die("No password set - ".htmlspecialchars($type)."listing with password not supported");
         }
         elseif($wrongpassword)
         {
-            log_and_die("Wrong password - ".$type."listing of ${_POST['domain']} not permitted");
+            log_and_die("Wrong password - ".htmlspecialchars($type)."listing of ${_POST['domain']} not permitted");
         }
     }
     else
