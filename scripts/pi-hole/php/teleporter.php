@@ -7,9 +7,20 @@
 *  Please see LICENSE file for your rights under this license. */
 
 require "password.php";
-if(!$auth) die("Not authorized");
+require "auth.php"; // Also imports func.php
 
-require('func.php');
+if (php_sapi_name() !== "cli") {
+	if(!$auth) die("Not authorized");
+	check_csrf(isset($_POST["token"]) ? $_POST["token"] : "");
+}
+
+function limit_length(&$item, $key)
+{
+	// limit max length for a domain entry to 253 chars
+	// return only a part of the string if it is longer
+	$item = substr($item, 0, 253);
+}
+
 function process_zip($name)
 {
 	global $zip;
@@ -25,6 +36,12 @@ function process_zip($name)
 	}
 	fclose($zippointer);
 	$domains = array_filter(explode("\n",$contents));
+
+	// Walk array and apply a max string length
+	// function to every member of the array of domains
+	array_walk($domains, "limit_length");
+
+	// Check validity of domains (after possible clipping)
 	check_domains($domains);
 	return $domains;
 }
@@ -34,6 +51,22 @@ function add_to_zip($path,$name)
 	global $zip;
 	if(file_exists($path.$name))
 		$zip->addFile($path.$name,$name);
+}
+
+function add_dir_to_zip($path)
+{
+	global $zip;
+	if($dir = opendir($path))
+	{
+		while(false !== ($entry = readdir($dir)))
+		{
+			if($entry !== "." && $entry !== "..")
+			{
+				$zip->addFile($path.$entry,$entry);
+			}
+		}
+		closedir($dir);
+	}
 }
 
 function check_domains($domains)
@@ -67,9 +100,9 @@ function getWildcardListContent() {
 	return "";
 }
 
-if($_POST["action"] == "in")
+if(isset($_POST["action"]))
 {
-	if($_FILES["zip_file"]["name"])
+	if($_FILES["zip_file"]["name"] && $_POST["action"] == "in")
 	{
 		$filename = $_FILES["zip_file"]["name"];
 		$source = $_FILES["zip_file"]["tmp_name"];
@@ -122,12 +155,13 @@ if($_POST["action"] == "in")
 	}
 	else
 	{
-		die("No file transmitted.");
+		die("No file transmitted or parameter error.");
 	}
 }
 else
 {
-	$archive_file_name = "/var/www/html/pi-hole-teleporter_".microtime(true).".zip";
+	$filename = "pi-hole-teleporter_".date("Y-m-d_h-i-s").".zip";
+	$archive_file_name = tempnam("/tmp", "Teleporter");
 	$zip = new ZipArchive();
 	touch($archive_file_name);
 	$res = $zip->open($archive_file_name, ZipArchive::CREATE | ZipArchive::OVERWRITE);
@@ -140,18 +174,21 @@ else
 	add_to_zip("/etc/pihole/","blacklist.txt");
 	add_to_zip("/etc/pihole/","adlists.list");
 	add_to_zip("/etc/pihole/","setupVars.conf");
+	add_dir_to_zip("/etc/dnsmasq.d/");
 
 	$zip->addFromString("wildcardblocking.txt", getWildcardListContent());
 	$zip->close();
 
 	header("Content-type: application/zip");
 	header('Content-Transfer-Encoding: binary');
-	header("Content-Disposition: attachment; filename=pi-hole-teleporter.zip");
+	header("Content-Disposition: attachment; filename=".$filename);
 	header("Content-length: " . filesize($archive_file_name));
 	header("Pragma: no-cache");
 	header("Expires: 0");
-	ob_end_clean();
+	if(ob_get_length() > 0) ob_end_clean();
 	readfile($archive_file_name);
+	ignore_user_abort(true);
+	unlink($archive_file_name);
 	exit;
 }
 

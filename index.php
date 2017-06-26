@@ -1,10 +1,10 @@
-<!-- Pi-hole: A black hole for Internet advertisements
+<?php /*
+*    Pi-hole: A black hole for Internet advertisements
 *    (c) 2017 Pi-hole, LLC (https://pi-hole.net)
 *    Network-wide ad blocking via your own hardware.
 *
 *    This file is copyright under the latest version of the EUPL.
-*    Please see LICENSE file for your rights under this license. -->
-<?php
+*    Please see LICENSE file for your rights under this license. */
     $indexpage = true;
     require "scripts/pi-hole/php/header.php";
 ?>
@@ -15,7 +15,7 @@
         <div class="small-box bg-aqua">
             <div class="inner">
                 <h3 class="statistic" id="ads_blocked_today">---</h3>
-                <p>DNS Queries Blocked Today</p>
+                <p>Queries Blocked Last 24 Hours</p>
             </div>
             <div class="icon">
                 <i class="ion ion-android-hand"></i>
@@ -28,7 +28,7 @@
         <div class="small-box bg-green">
             <div class="inner">
                 <h3 class="statistic" id="dns_queries_today">---</h3>
-                <p>DNS Queries Today</p>
+                <p>Queries Last 24 Hours</p>
             </div>
             <div class="icon">
                 <i class="ion ion-earth"></i>
@@ -41,7 +41,7 @@
         <div class="small-box bg-yellow">
             <div class="inner">
                 <h3 class="statistic" id="ads_percentage_today">---</h3>
-                <p>Of Today's Queries Were Blocked</p>
+                <p>Queries Blocked Last 24 Hours</p>
             </div>
             <div class="icon">
                 <i class="ion ion-pie-graph"></i>
@@ -54,7 +54,7 @@
         <div class="small-box bg-red">
             <div class="inner">
                 <h3 class="statistic" id="domains_being_blocked">---</h3>
-                <p>Domains Being Blocked</p>
+                <p>Domains on Blocklists</p>
             </div>
             <div class="icon">
                 <i class="ion ion-ios-list"></i>
@@ -68,7 +68,7 @@
     <div class="col-md-12">
     <div class="box" id="queries-over-time">
         <div class="box-header with-border">
-          <h3 class="box-title">Queries over time</h3>
+          <h3 class="box-title">Queries over last 24 hours</h3>
         </div>
         <div class="box-body">
           <div class="chart">
@@ -89,14 +89,14 @@
   // a password
   if($auth){ ?>
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-12 col-lg-6">
     <div class="box" id="query-types">
         <div class="box-header with-border">
-          <h3 class="box-title">Query Types</h3>
+          <h3 class="box-title">Query Types over Time</h3>
         </div>
         <div class="box-body">
           <div class="chart">
-            <canvas id="queryTypeChart" width="400" height="200"></canvas>
+            <canvas id="queryTypeChart" width="400" height="150"></canvas>
           </div>
         </div>
         <div class="overlay">
@@ -105,14 +105,14 @@
         <!-- /.box-body -->
       </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-12 col-lg-6">
     <div class="box" id="forward-destinations">
         <div class="box-header with-border">
-          <h3 class="box-title">Forward Destinations</h3>
+          <h3 class="box-title">Forward Destinations over Time</h3>
         </div>
         <div class="box-body">
           <div class="chart">
-            <canvas id="forwardDestinationChart" width="400" height="200"></canvas>
+            <canvas id="forwardDestinationChart" width="400" height="150"></canvas>
           </div>
         </div>
         <div class="overlay">
@@ -164,7 +164,7 @@ else
     <div class="<?php echo $tablelayout; ?>">
       <div class="box" id="ad-frequency">
         <div class="box-header with-border">
-          <h3 class="box-title">Top Advertisers</h3>
+          <h3 class="box-title">Top Blocked Domains</h3>
         </div>
         <!-- /.box-header -->
         <div class="box-body">

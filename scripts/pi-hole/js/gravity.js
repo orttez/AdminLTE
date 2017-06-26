@@ -50,4 +50,13 @@ $(function(){
     $("[data-hide]").on("click", function(){
         $(this).closest("." + $(this).attr("data-hide")).hide();
     });
+
+    // Do we want to start updating immediately?
+    // gravity.php?go
+    var searchString = window.location.search.substring(1);
+    if(searchString.indexOf("go") !== -1)
+    {
+        $("#gravityBtn").attr("disabled", true);
+        eventsource();
+    }
 });
